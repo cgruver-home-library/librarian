@@ -21,10 +21,10 @@ public class BorrowedBook {
     
     @Id()
     @Column(updatable = false, nullable = false)
-    private long bookId;
+    private Long bookId;
 
     @Column(updatable = false, nullable = false) 
-    private String isbn;
+    private String catalogId;
 
     @Column()
     private Date checkedOut;
@@ -35,4 +35,6 @@ public class BorrowedBook {
     @ManyToOne
     @JoinColumn(name = "library_card_id", nullable = false)
     private LibraryCard libraryCard;
+
+    
 }
