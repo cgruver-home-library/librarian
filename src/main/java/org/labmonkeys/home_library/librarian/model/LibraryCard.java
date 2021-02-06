@@ -42,5 +42,4 @@ public class LibraryCard extends PanacheEntityBase {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "libraryCard", cascade = CascadeType.ALL)
     @OrderBy("dueDate ASC")
     private List<BorrowedBook> borrowedBooks;
-
 }

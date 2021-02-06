@@ -4,17 +4,20 @@ quarkus:
   http:
     port: 8080
   datasource:
-    driver: org.mariadb.jdbc.Driver
-    url: ${RDBMS_URL}
-    min-size: 5
-    max-size: 20
-    initial-size: 5
-    validation-query-sql: SELECT 1
+    db-kind: mariadb
+    jdbc:
+      driver: org.mariadb.jdbc.Driver
+      url: ${RDBMS_URL}
+      min-size: 5
+      max-size: 20
+      initial-size: 5
+      validation-query-sql: SELECT 1
     username: ${DATASOURCE_USER}
     password: ${DATASOURCE_PWD}
   hibernate-orm:
-    # log:
-      # sql: true
-    dialect: org.hibernate.dialect.MariaDB103Dialect
     database:
       generation: update
+    # log:
+      # sql: true
+    # dialect: org.hibernate.dialect.MariaDB103Dialect
+    
