@@ -18,7 +18,7 @@
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
     <quarkus.platform.version>${quarkus.version}</quarkus.platform.version>
-    <quarkus.version>1.10.5.Final</quarkus.version>
+    <quarkus.version>1.11.1.Final</quarkus.version>
     <surefire-plugin.version>2.22.1</surefire-plugin.version>
   </properties>
   <dependencyManagement>
@@ -48,11 +48,6 @@
       <artifactId>mapstruct-processor</artifactId>
       <version>${org.mapstruct.version}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.labmonkeys.home_library</groupId>
-      <artifactId>librarian-api</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -91,9 +86,13 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jackson</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-mariadb</artifactId>
+    </dependency>
   </dependencies>
   <build>
-    <finalName></finalName>
+    <finalName>${appName}</finalName>
     <plugins>
       <plugin>
         <groupId>io.quarkus</groupId>
