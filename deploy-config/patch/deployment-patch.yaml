@@ -1,0 +1,32 @@
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: --APP_NAME--
+        resources:
+          requests:
+            memory: 512Mi
+            cpu:    500m
+          limits:
+            memory: 512Mi
+            cpu:    1
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /health/ready
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 1
+          successThreshold: 1
+          timeoutSeconds: 1
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /health/live
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 1
+          successThreshold: 1
+          timeoutSeconds: 1
+      terminationGracePeriodSeconds: 15
