@@ -1,7 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: --APP_NAME--
+  name: --DEPLOY_NAME--
+  labels:
+    app: "--APP_NAME--"
+    version: "--DEPLOY_NAME--"
 data:
   RDBMS_URL: jdbc:mariadb:failover://mariadb-galera-0.galera-cluster.mariadb-galera.svc:3306,mariadb-galera-1.galera-cluster.mariadb-galera.svc:3306,mariadb-galera-2.galera-cluster.mariadb-galera.svc:3306/librarian
   CORS_ORIGINS: "*"
