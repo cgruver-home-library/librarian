@@ -29,13 +29,13 @@ public class LibraryMember extends PanacheEntityBase {
     @Id()
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
-    @Column(updatable = false)
+    @Column(name = "library_member_id", updatable = false)
     private Long libraryMemberId;
 
-    @Column()
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column()
+    @Column(name = "last_name")
     private String lastName;
     
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "libraryMember", cascade = CascadeType.ALL)

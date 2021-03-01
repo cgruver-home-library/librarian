@@ -23,16 +23,16 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "library_card", indexes = {@Index(name = "idx_library_card_id", columnList = "library_card_id")})
+@Table(name = "library_card")
 public class LibraryCard extends PanacheEntityBase {
     
     @Id()
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
-    @Column(updatable = false)
+    @Column(name = "library_card_id", updatable = false)
     private Long libraryCardId;
 
-    @Column()
+    @Column(name = "active")
     private boolean active;
 
     @ManyToOne

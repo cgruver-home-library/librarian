@@ -32,19 +32,19 @@ public class BorrowedBook extends PanacheEntityBase {
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
     
-    @Column(updatable = false, nullable = false)
+    @Column(name = "book_id", updatable = false, nullable = false)
     private Long bookId;
 
-    @Column(updatable = false, nullable = false)
+    @Column(name = "catalog_id", updatable = false, nullable = false)
     private String catalogId;
 
-    @Column()
+    @Column(name = "status")
     private BookStatusEnum status;
 
-    @Column()
+    @Column(name = "borrowed_book")
     private LocalDate borrowedDate;
 
-    @Column()
+    @Column(name = "due_date")
     private LocalDate dueDate;
 
     @ManyToOne
