@@ -38,7 +38,7 @@ public class LibraryMember extends PanacheEntityBase {
     @Column()
     private String lastName;
     
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "LibraryMember", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "libraryMember", cascade = CascadeType.ALL)
     @OrderBy("libraryCardId ASC")
     private List<LibraryCard> libraryCards;
 }
