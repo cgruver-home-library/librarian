@@ -3,7 +3,12 @@ spec:
   template:
     spec:
       containers:
-      - name: --APP_NAME--
+      - name: --DEPLOY_NAME--
+        envFrom:
+        - configMapRef:
+            name: --DEPLOY_NAME--
+        - secretRef:
+            name: --DEPLOY_NAME--
         resources:
           requests:
             memory: 512Mi
