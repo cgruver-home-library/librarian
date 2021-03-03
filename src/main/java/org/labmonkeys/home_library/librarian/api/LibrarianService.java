@@ -14,8 +14,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.labmonkeys.home_library.librarian.LibrarianException;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
@@ -32,27 +32,27 @@ public class LibrarianService {
     LibrarianMapper mapper;
 
     @GET
-    @Path("/getLibraryCard/{card-id}")
+    @Path("/getLibraryCard/{cardId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public LibraryCardDTO getLibraryCard(@PathParam("card-id") Long libraryCardId) throws LibrarianException {
-
-        return mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId));
+    public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
+        return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
     }
 
     @POST
     @Path("/saveLibraryCard")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public void saveLibraryCard(LibraryCardDTO libraryCard) throws LibrarianException {
+    public Response saveLibraryCard(LibraryCardDTO libraryCard) {
         LibraryCard.persist(mapper.libraryCardDtoToEntity(libraryCard));
+        return Response.ok().build();
     }
 
     @GET
     @Path("/getLibraryMembers/{lastName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<LibraryMemberDTO> lookUpMember(@PathParam("lastName") String lastName) throws LibrarianException {
+    public Response lookUpMember(@PathParam("lastName") String lastName) {
 
-        return null;
+        return Response.ok().build();
     }
 
     @POST
@@ -60,17 +60,17 @@ public class LibrarianService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public LibraryMemberDTO addLibraryMember(LibraryMemberDTO member) throws LibrarianException {
+    public Response addLibraryMember(LibraryMemberDTO member) {
         LibraryMember libraryMember = mapper.libraryMemberDtoToLibraryMember(member);
         LibraryMember.persist(libraryMember);
-        return mapper.libraryMemberToDto(libraryMember);
+        return Response.ok(mapper.libraryMemberToDto(libraryMember)).build();
     }
 
     @POST
     @Path("/createCard/{memberId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public LibraryCardDTO createLibraryCard(@PathParam("memberId") Long memberId) throws LibrarianException {
+    public Response createLibraryCard(@PathParam("memberId") Long memberId) {
         LibraryMember libraryMember = LibraryMember.findById(memberId);
         LibraryCard libraryCard = new LibraryCard();
         for (LibraryCard card : libraryMember.getLibraryCards()) {
@@ -79,39 +79,39 @@ public class LibrarianService {
         libraryCard.setActive(true);
         libraryCard.setLibraryMember(libraryMember);
         LibraryCard.persist(libraryCard);
-        return mapper.libraryCardToDTO(libraryCard);
+        return Response.ok(mapper.libraryCardToDTO(libraryCard)).build();
     }
 
     @GET
     @Path("/getBooksDueToday")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<BorrowedBookDTO> getAllBooksDueToday() throws LibrarianException {
+    public List<BorrowedBookDTO> getAllBooksDueToday() {
         return mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueToday());
     }
 
     @GET
     @Path("/getBooksDue/card/{card-id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<BorrowedBookDTO> getBooksDueByCard(@PathParam("card-id") Long libraryCardId) throws LibrarianException {
-        return mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByCard(libraryCardId));
+    public Response getBooksDueByCard(@PathParam("card-id") Long libraryCardId) {
+        return Response.ok(mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByCard(libraryCardId))).build();
     }
 
     @GET
     @Path("/getBooksDue/member/{member-id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<BorrowedBookDTO> getBooksDueByMember(@PathParam("member-id") Long libraryMemberId) throws LibrarianException {
+    public Response getBooksDueByMember(@PathParam("member-id") Long libraryMemberId) {
         LibraryMember member = LibraryMember.findById(libraryMemberId);
         List<BorrowedBook> borrowedBooks = new ArrayList<BorrowedBook>();
         for (LibraryCard card : member.getLibraryCards()) {
             borrowedBooks.addAll(BorrowedBook.getBooksDueByCard(card.getLibraryCardId()));
         }
-        return mapper.BorrowedBooksToDtos(borrowedBooks);
+        return Response.ok(mapper.BorrowedBooksToDtos(borrowedBooks)).build();
     }
 
     @GET
     @Path("/getBooksDueByDate/{date}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<BorrowedBookDTO> getAllBooksDueByDate(@PathParam("date") String dueDate) throws LibrarianException {
-        return mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByDate(LocalDate.parse(dueDate)));
+    public Response getAllBooksDueByDate(@PathParam("date") String dueDate) {
+        return Response.ok(mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByDate(LocalDate.parse(dueDate)))).build();
     }
 }
