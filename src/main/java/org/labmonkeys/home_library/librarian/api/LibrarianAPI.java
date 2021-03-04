@@ -11,6 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
+import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
 
 @Path("/librarian")
 @ApplicationScoped
@@ -26,14 +27,14 @@ public interface LibrarianAPI {
     public Response suspendLibraryCard(@PathParam("cardId") Long libraryCardId); 
 
     @POST
-    @Path("borrowBooks/{cardId")
+    @Path("/borrowBooks")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response borrowBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books); 
+    public Response borrowBooks(LibraryCardDTO card); 
 
     @POST
-    @Path("returnBooks/{cardId")
+    @Path("/returnBooks")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response returnBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books); 
+    public Response returnBooks(LibraryCardDTO card); 
 
     @POST
     @Path("/createCard/{name}")

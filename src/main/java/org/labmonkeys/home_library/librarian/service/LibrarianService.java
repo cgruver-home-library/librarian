@@ -18,6 +18,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
+import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent.BookStatusEnum;
@@ -50,8 +51,8 @@ public class LibrarianService implements LibrarianAPI {
     }
 
     @Transactional
-    public Response borrowBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books) {
-        LibraryCard card = LibraryCard.findById(libraryCardId);
+    public Response borrowBooks(LibraryCardDTO cardDto) {
+        LibraryCard card = LibraryCard.findById(cardDto.getLibraryCardId());
         if (card == null) {
             return Response.status(Status.NOT_FOUND).build();            
         }
@@ -59,7 +60,7 @@ public class LibrarianService implements LibrarianAPI {
         {
             return Response.status(Status.PRECONDITION_FAILED.getStatusCode(), "Inactive Library Card").build();
         }
-        List<BorrowedBook> borrowedBooks = mapper.BorrowedBookDtosToEntities(books);
+        List<BorrowedBook> borrowedBooks = mapper.BorrowedBookDtosToEntities(cardDto.getBorrowedBooks());
         Calendar cal = Calendar.getInstance();
         Date borrowedDate = cal.getTime();
         cal.add(Calendar.DAY_OF_MONTH, 14);
@@ -72,7 +73,7 @@ public class LibrarianService implements LibrarianAPI {
         BorrowedBook.persist(borrowedBooks);
         card.flush();
         List<BookEvent> bookEvents = new ArrayList<BookEvent>();
-        for (BorrowedBookDTO borrowedBook : books) {
+        for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookEvent bookEvent = new BookEvent();
             bookEvent.setBookId(borrowedBook.getBookId());
             bookEvent.setCatalogId(borrowedBook.getCatalogId());
@@ -83,12 +84,12 @@ public class LibrarianService implements LibrarianAPI {
     }
 
     @Transactional
-    public Response returnBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books) {
-        LibraryCard card = LibraryCard.findById(libraryCardId);
+    public Response returnBooks(LibraryCardDTO cardDto) {
+        LibraryCard card = LibraryCard.findById(cardDto.getLibraryCardId());
         if (card == null) {
             return Response.status(Status.NOT_FOUND).build();            
         }
-        for (BorrowedBookDTO borrowedBookDTO : books) {
+        for (BorrowedBookDTO borrowedBookDTO : cardDto.getBorrowedBooks()) {
             BorrowedBook.deleteById(borrowedBookDTO.getBookId());
         }
         card.flush();
