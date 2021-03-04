@@ -1,4 +1,4 @@
-package org.labmonkeys.home_library.librarian.api;
+package org.labmonkeys.home_library.librarian.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,29 +19,31 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
+import org.labmonkeys.home_library.librarian.messaging.BookEvent;
+import org.labmonkeys.home_library.librarian.messaging.LibrarianPublisher;
+import org.labmonkeys.home_library.librarian.messaging.BookEvent.BookStatusEnum;
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
 import org.labmonkeys.home_library.librarian.model.LibraryMember;
 
 @Path("/librarian")
 @ApplicationScoped
-public class LibrarianService {
+public class LibrarianService implements LibrarianAPI {
 
     @Inject
     LibrarianMapper mapper;
 
-    @GET
-    @Path("/getLibraryCard/{cardId}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Inject
+    LibrarianPublisher publisher;
+
     public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
     }
 
-    @POST
-    @Path("/suspendLibraryCard/{cardId}")
     @Transactional
     public Response suspendLibraryCard(@PathParam("cardId") Long libraryCardId) {
         LibraryCard card = LibraryCard.findById(libraryCardId);
@@ -53,8 +55,6 @@ public class LibrarianService {
         return Response.ok().build();
     }
 
-    @POST
-    @Path("borrowBooks/{cardId")
     @Transactional
     public Response borrowBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books) {
         LibraryCard card = LibraryCard.findById(libraryCardId);
@@ -77,11 +77,17 @@ public class LibrarianService {
         }
         BorrowedBook.persist(borrowedBooks);
         card.flush();
+        List<BookEvent> bookEvents = new ArrayList<BookEvent>();
+        for (BorrowedBookDTO borrowedBook : books) {
+            BookEvent bookEvent = new BookEvent();
+            bookEvent.setBookId(borrowedBook.getBookId());
+            bookEvent.setCatalogId(borrowedBook.getCatalogId());
+            bookEvent.setStatus(BookStatusEnum.CHECKED_OUT);
+        }
+        publisher.publishBorrowedBooks(bookEvents);
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 
-    @POST
-    @Path("returnBooks/{cardId")
     @Transactional
     public Response returnBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books) {
         LibraryCard card = LibraryCard.findById(libraryCardId);
@@ -95,18 +101,11 @@ public class LibrarianService {
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 
-    @GET
-    @Path("/getLibraryMembers/{lastName}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response lookUpMember(@PathParam("lastName") String lastName) {
 
         return Response.ok().build();
     }
 
-    @POST
-    @Path("/addMember")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response addLibraryMember(LibraryMemberDTO member) {
         LibraryMember libraryMember = mapper.libraryMemberDtoToLibraryMember(member);
@@ -114,9 +113,6 @@ public class LibrarianService {
         return Response.ok(mapper.libraryMemberToDto(libraryMember)).build();
     }
 
-    @POST
-    @Path("/createCard/{memberId}")
-    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response createLibraryCard(@PathParam("memberId") Long memberId) {
         LibraryMember libraryMember = LibraryMember.findById(memberId);
@@ -130,23 +126,14 @@ public class LibrarianService {
         return Response.ok(mapper.libraryCardToDTO(libraryCard)).build();
     }
 
-    @GET
-    @Path("/getBooksDueToday")
-    @Produces(MediaType.APPLICATION_JSON)
     public List<BorrowedBookDTO> getAllBooksDueToday() {
         return mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueToday());
     }
 
-    @GET
-    @Path("/getBooksDue/card/{cardId}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getBooksDueByCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByCard(libraryCardId))).build();
     }
 
-    @GET
-    @Path("/getBooksDue/member/{memberId}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getBooksDueByMember(@PathParam("memberId") Long libraryMemberId) {
         LibraryMember member = LibraryMember.findById(libraryMemberId);
         List<BorrowedBook> borrowedBooks = new ArrayList<BorrowedBook>();
@@ -156,9 +143,6 @@ public class LibrarianService {
         return Response.ok(mapper.BorrowedBooksToDtos(borrowedBooks)).build();
     }
 
-    @GET
-    @Path("/getBooksDueByDate/{date}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAllBooksDueByDate(@PathParam("date") String dueDate) {
         return Response.ok(mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByDate(LocalDate.parse(dueDate)))).build();
     }

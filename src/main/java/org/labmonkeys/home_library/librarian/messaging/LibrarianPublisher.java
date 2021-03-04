@@ -10,7 +10,7 @@ import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 public class LibrarianPublisher {
     
     @Outgoing("book-event")
-    public List<BorrowedBookDTO> publishBorrowedBooks(List<BorrowedBookDTO> books) {
+    public List<BookEvent> publishBorrowedBooks(List<BookEvent> books) {
         return books;
     }
 

@@ -20,9 +20,10 @@ quarkus:
       dialect: org.hibernate.dialect.MariaDB103Dialect
 mp:
   messaging:
-    book-event:
-      connector: smallrye-kafka
-      topic: book-event
-      value:
-        deserializer: org.labmonkeys.home_library.bookshelf.messaging.BookDeserializer
+    outgoing:  
+      book-event:
+        connector: smallrye-kafka
+        topic: book-event
+        value:
+          serializer: io.quarkus.kafka.client.serialization.ObjectMapperSerializer
     
