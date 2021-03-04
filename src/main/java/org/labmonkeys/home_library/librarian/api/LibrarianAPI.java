@@ -10,9 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
-import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
 
 @Path("/librarian")
 @ApplicationScoped
@@ -29,27 +27,18 @@ public interface LibrarianAPI {
 
     @POST
     @Path("borrowBooks/{cardId")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response borrowBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books); 
 
     @POST
     @Path("returnBooks/{cardId")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response returnBooks(@PathParam("cardId") Long libraryCardId, List<BorrowedBookDTO> books); 
 
-    @GET
-    @Path("/getLibraryMembers/{lastName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response lookUpMember(@PathParam("lastName") String lastName); 
-
     @POST
-    @Path("/addMember")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/createCard/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addLibraryMember(LibraryMemberDTO member); 
-
-    @POST
-    @Path("/createCard/{memberId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createLibraryCard(@PathParam("memberId") Long memberId); 
+    public Response createLibraryCard(@PathParam("name") String name); 
 
     @GET
     @Path("/getBooksDueToday")
@@ -60,11 +49,6 @@ public interface LibrarianAPI {
     @Path("/getBooksDue/card/{cardId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBooksDueByCard(@PathParam("cardId") Long libraryCardId); 
-
-    @GET
-    @Path("/getBooksDue/member/{memberId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getBooksDueByMember(@PathParam("memberId") Long libraryMemberId); 
 
     @GET
     @Path("/getBooksDueByDate/{date}")

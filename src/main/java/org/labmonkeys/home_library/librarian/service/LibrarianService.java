@@ -9,13 +9,8 @@ import java.util.Date;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -23,13 +18,11 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
-import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent.BookStatusEnum;
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
-import org.labmonkeys.home_library.librarian.model.LibraryMember;
 
 @Path("/librarian")
 @ApplicationScoped
@@ -108,21 +101,11 @@ public class LibrarianService implements LibrarianAPI {
     }
 
     @Transactional
-    public Response addLibraryMember(LibraryMemberDTO member) {
-        LibraryMember libraryMember = mapper.libraryMemberDtoToLibraryMember(member);
-        LibraryMember.persist(libraryMember);
-        return Response.ok(mapper.libraryMemberToDto(libraryMember)).build();
-    }
-
-    @Transactional
-    public Response createLibraryCard(@PathParam("memberId") Long memberId) {
-        LibraryMember libraryMember = LibraryMember.findById(memberId);
+    public Response createLibraryCard(@PathParam("name") String name) {
+    
         LibraryCard libraryCard = new LibraryCard();
-        for (LibraryCard card : libraryMember.getLibraryCards()) {
-            card.setActive(false);
-        }
         libraryCard.setActive(true);
-        libraryCard.setLibraryMember(libraryMember);
+        libraryCard.setName(name);
         LibraryCard.persist(libraryCard);
         return Response.ok(mapper.libraryCardToDTO(libraryCard)).build();
     }
@@ -133,15 +116,6 @@ public class LibrarianService implements LibrarianAPI {
 
     public Response getBooksDueByCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.BorrowedBooksToDtos(BorrowedBook.getBooksDueByCard(libraryCardId))).build();
-    }
-
-    public Response getBooksDueByMember(@PathParam("memberId") Long libraryMemberId) {
-        LibraryMember member = LibraryMember.findById(libraryMemberId);
-        List<BorrowedBook> borrowedBooks = new ArrayList<BorrowedBook>();
-        for (LibraryCard card : member.getLibraryCards()) {
-            borrowedBooks.addAll(BorrowedBook.getBooksDueByCard(card.getLibraryCardId()));
-        }
-        return Response.ok(mapper.BorrowedBooksToDtos(borrowedBooks)).build();
     }
 
     public Response getAllBooksDueByDate(@PathParam("date") String dueDate) {

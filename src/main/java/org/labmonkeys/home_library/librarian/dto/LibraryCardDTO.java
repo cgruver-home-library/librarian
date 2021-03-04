@@ -8,7 +8,7 @@ import lombok.Data;
 public class LibraryCardDTO {
     
     private Long libraryCardId;
-    private boolean active;
+    private String name;
     private Long libraryMemberId;
     private List<BorrowedBookDTO> borrowedBooks;
 }

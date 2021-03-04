@@ -9,8 +9,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -31,12 +29,11 @@ public class LibraryCard extends PanacheEntityBase {
     @Column(name = "library_card_id", updatable = false)
     private Long libraryCardId;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "active")
     private boolean active;
-
-    @ManyToOne
-    @JoinColumn(name = "library_member", nullable = false)
-    private LibraryMember libraryMember;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "libraryCard", cascade = CascadeType.ALL)
     @OrderBy("dueDate ASC")

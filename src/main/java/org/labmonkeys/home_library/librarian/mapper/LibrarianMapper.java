@@ -4,10 +4,8 @@ import java.util.List;
 
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
-import org.labmonkeys.home_library.librarian.model.LibraryMember;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
-import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "cdi")
@@ -29,7 +27,4 @@ public interface LibrarianMapper {
 
     List<LibraryCardDTO> libraryCardsToDtos(List<LibraryCard> cards);
 
-    LibraryMember libraryMemberDtoToLibraryMember(LibraryMemberDTO member);
-
-    LibraryMemberDTO libraryMemberToDto(LibraryMember member);
 }
