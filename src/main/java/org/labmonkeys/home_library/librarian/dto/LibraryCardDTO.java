@@ -9,6 +9,5 @@ public class LibraryCardDTO {
     
     private Long libraryCardId;
     private String name;
-    private Long libraryMemberId;
     private List<BorrowedBookDTO> borrowedBooks;
 }
