@@ -19,12 +19,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryMemberDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent;
-import org.labmonkeys.home_library.librarian.messaging.LibrarianPublisher;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent.BookStatusEnum;
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
@@ -37,8 +38,8 @@ public class LibrarianService implements LibrarianAPI {
     @Inject
     LibrarianMapper mapper;
 
-    @Inject
-    LibrarianPublisher publisher;
+    @Inject @Channel("book-event")
+    Emitter<List<BookEvent>> bookEvent;
 
     public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
@@ -84,7 +85,7 @@ public class LibrarianService implements LibrarianAPI {
             bookEvent.setCatalogId(borrowedBook.getCatalogId());
             bookEvent.setStatus(BookStatusEnum.CHECKED_OUT);
         }
-        publisher.publishBorrowedBooks(bookEvents);
+        bookEvent.send(bookEvents);
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 
