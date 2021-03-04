@@ -1,6 +1,8 @@
 package org.labmonkeys.home_library.librarian.model;
 
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -14,7 +16,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO.BookStatusEnum;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Sort;
@@ -38,32 +39,31 @@ public class BorrowedBook extends PanacheEntityBase {
     @Column(name = "catalog_id", updatable = false, nullable = false)
     private String catalogId;
 
-    @Column(name = "status")
-    private BookStatusEnum status;
-
     @Column(name = "borrowed_book")
-    private LocalDate borrowedDate;
+    private Date borrowedDate;
 
     @Column(name = "due_date")
-    private LocalDate dueDate;
+    private Date dueDate;
 
     @ManyToOne
     @JoinColumn(name = "library_card_id", nullable = false)
     private LibraryCard libraryCard;
 
     public static List<BorrowedBook> getBooksDueToday() {
-        List<BorrowedBook> booksDue = find("status == ?1 and dueDate < ?2", Sort.ascending("dueDate"), BookStatusEnum.CHECKED_OUT ,LocalDate.now()).list();
+        Calendar cal = Calendar.getInstance();
+        List<BorrowedBook> booksDue = find("dueDate < ?1", Sort.ascending("dueDate"), cal.getTime()).list();
         return booksDue;
     }
 
     public static List<BorrowedBook> getBooksDueByDate(LocalDate dueDate) {
         
-        List<BorrowedBook> booksDue = find("status == ?1 and dueDate < ?2", Sort.ascending("dueDate"), BookStatusEnum.CHECKED_OUT ,dueDate).list();
+        List<BorrowedBook> booksDue = find("dueDate < ?1", Sort.ascending("dueDate") ,dueDate).list();
         return booksDue;
     }
 
     public static List<BorrowedBook> getBooksDueByCard(Long cardId) {
-        List<BorrowedBook> booksDue = find("status == ?1 and libraryCard == ?2 and dueDate < ?3", Sort.ascending("dueDate"), BookStatusEnum.CHECKED_OUT ,LocalDate.now(), cardId).list();
+        Calendar cal = Calendar.getInstance();
+        List<BorrowedBook> booksDue = find("libraryCard == ?1 and dueDate < ?2", Sort.ascending("dueDate"), cal.getTime(), cardId).list();
         return booksDue;
     }
 
