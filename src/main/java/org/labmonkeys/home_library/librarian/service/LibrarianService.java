@@ -33,7 +33,7 @@ public class LibrarianService implements LibrarianAPI {
     LibrarianMapper mapper;
 
     @Inject @Channel("book-event")
-    Emitter<List<BookEvent>> bookEvent;
+    Emitter<BookEvent> bookEventEmitter;
 
     public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
@@ -72,15 +72,14 @@ public class LibrarianService implements LibrarianAPI {
         }
         BorrowedBook.persist(borrowedBooks);
         card.flush();
-        List<BookEvent> bookEvents = new ArrayList<BookEvent>();
+        //List<BookEvent> bookEvents = new ArrayList<BookEvent>();
         for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookEvent bookEvent = new BookEvent();
             bookEvent.setBookId(borrowedBook.getBookId());
             bookEvent.setCatalogId(borrowedBook.getCatalogId());
             bookEvent.setStatus(BookStatusEnum.CHECKED_OUT);
-            bookEvents.add(bookEvent);
+            bookEventEmitter.send(bookEvent);
         }
-        bookEvent.send(bookEvents);
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 
