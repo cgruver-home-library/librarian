@@ -11,5 +11,4 @@ public class BorrowedBookDTO {
     private String catalogId;
     private Date borrowedDate;
     private Date dueDate;
-    private Long libraryCardId;
 }
