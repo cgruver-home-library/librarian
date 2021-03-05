@@ -78,6 +78,7 @@ public class LibrarianService implements LibrarianAPI {
             bookEvent.setBookId(borrowedBook.getBookId());
             bookEvent.setCatalogId(borrowedBook.getCatalogId());
             bookEvent.setStatus(BookStatusEnum.CHECKED_OUT);
+            bookEvents.add(bookEvent);
         }
         bookEvent.send(bookEvents);
         return Response.ok(mapper.libraryCardToDTO(card)).build();
