@@ -29,10 +29,6 @@ import lombok.EqualsAndHashCode;
 public class BorrowedBook extends PanacheEntityBase {
 
     @Id()
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "native")
-    @GenericGenerator(name = "native", strategy = "native")
-    private Long id;
-    
     @Column(name = "book_id", updatable = false, nullable = false)
     private Long bookId;
 

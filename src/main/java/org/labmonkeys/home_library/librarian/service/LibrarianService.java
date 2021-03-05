@@ -64,8 +64,15 @@ public class LibrarianService implements LibrarianAPI {
             return Response.status(Status.PRECONDITION_FAILED.getStatusCode(), "Inactive Library Card").build();
         }
 
-        // Publish an event to let subscribers know that the books are checked-out (Since this is anyncronous, do it first)
+        // Make sure that books are not already checked out.
+        for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
+            BorrowedBook book = BorrowedBook.findById(borrowedBook.getBookId());
+            if (book != null) {
+                return Response.status(Status.PRECONDITION_FAILED.getStatusCode(), "Book: " + book.getBookId() + " is already checked out").build();
+            }
+        }
 
+        // Publish an event to let subscribers know that the books are checked-out (Since this is anyncronous, do it first)
         List<BookState> bookState = new ArrayList<BookState>();
         BookEvent bookEvent = new BookEvent();
         bookEvent.setBookList(bookState);
@@ -102,6 +109,20 @@ public class LibrarianService implements LibrarianAPI {
         if (card == null) {
             return Response.status(Status.NOT_FOUND).build();            
         }
+        // Publish an event to let subscribers know that the books are checked-in (Since this is anyncronous, do it first)
+        List<BookState> bookState = new ArrayList<BookState>();
+        BookEvent bookEvent = new BookEvent();
+        bookEvent.setBookList(bookState);
+        for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
+            BookState state = new BookState();
+            state.setBookId(borrowedBook.getBookId());
+            state.setBookCaseId(0L);
+            state.setBookShelfId(0L);
+            state.setStatus(BookStatusEnum.CHECKED_IN);
+            bookState.add(state);
+        }
+        bookEventPublisher.sendEvent(bookEvent);
+        // Delete the borrowed books from the card.
         for (BorrowedBookDTO borrowedBookDTO : cardDto.getBorrowedBooks()) {
             BorrowedBook.deleteById(borrowedBookDTO.getBookId());
         }
