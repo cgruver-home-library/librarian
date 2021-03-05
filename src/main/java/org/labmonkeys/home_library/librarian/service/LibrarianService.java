@@ -68,6 +68,7 @@ public class LibrarianService implements LibrarianAPI {
 
         List<BookState> bookState = new ArrayList<BookState>();
         BookEvent bookEvent = new BookEvent();
+        bookEvent.setBookList(bookState);
         for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookState state = new BookState();
             state.setBookCaseId(0L);
