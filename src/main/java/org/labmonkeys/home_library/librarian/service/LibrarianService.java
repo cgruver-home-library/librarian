@@ -71,6 +71,7 @@ public class LibrarianService implements LibrarianAPI {
         bookEvent.setBookList(bookState);
         for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookState state = new BookState();
+            state.setBookId(borrowedBook.getBookId());
             state.setBookCaseId(0L);
             state.setBookShelfId(0L);
             state.setStatus(BookStatusEnum.CHECKED_OUT);
