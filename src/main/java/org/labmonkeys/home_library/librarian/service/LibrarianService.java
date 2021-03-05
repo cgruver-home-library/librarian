@@ -1,8 +1,8 @@
 package org.labmonkeys.home_library.librarian.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,15 +13,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
 import org.labmonkeys.home_library.librarian.messaging.BookEvent;
-import org.labmonkeys.home_library.librarian.messaging.BookEvent.BookStatusEnum;
+import org.labmonkeys.home_library.librarian.messaging.BookEventPublisher;
+import org.labmonkeys.home_library.librarian.messaging.BookState;
+import org.labmonkeys.home_library.librarian.messaging.BookState.BookStatusEnum;
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
 
@@ -32,8 +31,8 @@ public class LibrarianService implements LibrarianAPI {
     @Inject
     LibrarianMapper mapper;
 
-    @Inject @Channel("book-event")
-    Emitter<BookEvent> bookEventEmitter;
+    @Inject
+    BookEventPublisher bookEventPublisher;
 
     public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
@@ -52,14 +51,33 @@ public class LibrarianService implements LibrarianAPI {
 
     @Transactional
     public Response borrowBooks(LibraryCardDTO cardDto) {
+
+        // Retrieve the Library Card
         LibraryCard card = LibraryCard.findById(cardDto.getLibraryCardId());
         if (card == null) {
             return Response.status(Status.NOT_FOUND).build();            
         }
+
+        // Make sure the Card is not suspended
         if (!card.isActive())
         {
             return Response.status(Status.PRECONDITION_FAILED.getStatusCode(), "Inactive Library Card").build();
         }
+
+        // Publish an event to let subscribers know that the books are checked-out (Since this is anyncronous, do it first)
+
+        List<BookState> bookState = new ArrayList<BookState>();
+        BookEvent bookEvent = new BookEvent();
+        for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
+            BookState state = new BookState();
+            state.setBookCaseId(0L);
+            state.setBookShelfId(0L);
+            state.setStatus(BookStatusEnum.CHECKED_OUT);
+            bookState.add(state);
+        }
+        bookEventPublisher.sendEvent(bookEvent);
+
+        // Update the librarian data store with the borrowed books
         List<BorrowedBook> borrowedBooks = mapper.BorrowedBookDtosToEntities(cardDto.getBorrowedBooks());
         Calendar cal = Calendar.getInstance();
         Date borrowedDate = cal.getTime();
@@ -72,14 +90,7 @@ public class LibrarianService implements LibrarianAPI {
         }
         BorrowedBook.persist(borrowedBooks);
         card.flush();
-        //List<BookEvent> bookEvents = new ArrayList<BookEvent>();
-        for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
-            BookEvent bookEvent = new BookEvent();
-            bookEvent.setBookId(borrowedBook.getBookId());
-            bookEvent.setCatalogId(borrowedBook.getCatalogId());
-            bookEvent.setStatus(BookStatusEnum.CHECKED_OUT);
-            bookEventEmitter.send(bookEvent);
-        }
+        
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 

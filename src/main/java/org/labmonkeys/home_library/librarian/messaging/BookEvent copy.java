@@ -1,4 +1,4 @@
-package org.labmonkeys.home_library.librarian.messaging;
+package org.labmonkeys.home_library.bookshelf.messaging;
 
 import java.util.List;
 import lombok.Data;
