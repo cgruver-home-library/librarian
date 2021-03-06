@@ -17,7 +17,16 @@ quarkus:
   hibernate-orm:
     database:
       generation: update
-    # log:
-      # sql: true
-    # dialect: org.hibernate.dialect.MariaDB103Dialect
+      dialect: org.hibernate.dialect.MariaDB103Dialect
+kafka:
+  bootstrap:
+    servers: ${KAFKA_BOOTSTRAP}
+mp:
+  messaging:
+    outgoing:  
+      book-event:
+        connector: smallrye-kafka
+        topic: book-event
+        value:
+          serializer: io.quarkus.kafka.client.serialization.ObjectMapperSerializer
     

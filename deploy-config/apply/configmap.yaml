@@ -9,3 +9,4 @@ data:
   RDBMS_URL: jdbc:mariadb:failover://mariadb-galera-0.galera-cluster.mariadb-galera.svc:3306,mariadb-galera-1.galera-cluster.mariadb-galera.svc:3306,mariadb-galera-2.galera-cluster.mariadb-galera.svc:3306/librarian
   CORS_ORIGINS: "*"
   CORS_METHODS: "GET,POST"
+  KAFKA_BOOTSTRAP: "home-library-kafka-bootstrap.home-library.svc:9092"

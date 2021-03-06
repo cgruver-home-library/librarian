@@ -9,9 +9,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -23,21 +20,20 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "library_card", indexes = {@Index(name = "idx_library_card_id", columnList = "library_card_id")})
+@Table(name = "library_card")
 public class LibraryCard extends PanacheEntityBase {
     
     @Id()
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
-    @Column(updatable = false)
+    @Column(name = "library_card_id", updatable = false)
     private Long libraryCardId;
 
-    @Column()
-    private boolean active;
+    @Column(name = "name")
+    private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "library_member", nullable = false)
-    private LibraryMember libraryMember;
+    @Column(name = "active")
+    private boolean active;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "libraryCard", cascade = CascadeType.ALL)
     @OrderBy("dueDate ASC")
