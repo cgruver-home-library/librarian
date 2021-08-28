@@ -3,8 +3,6 @@ package org.labmonkeys.home_library.librarian.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -17,10 +15,11 @@ import org.labmonkeys.home_library.librarian.api.LibrarianAPI;
 import org.labmonkeys.home_library.librarian.dto.BorrowedBookDTO;
 import org.labmonkeys.home_library.librarian.dto.LibraryCardDTO;
 import org.labmonkeys.home_library.librarian.mapper.LibrarianMapper;
-import org.labmonkeys.home_library.librarian.messaging.BookEvent;
-import org.labmonkeys.home_library.librarian.messaging.BookEventPublisher;
+import org.labmonkeys.home_library.librarian.messaging.BorrowedBookEventPublisher;
 import org.labmonkeys.home_library.librarian.messaging.BookState;
+import org.labmonkeys.home_library.librarian.messaging.BorrowedBookEvent;
 import org.labmonkeys.home_library.librarian.messaging.BookState.BookStatusEnum;
+import org.labmonkeys.home_library.librarian.messaging.BorrowedBookEvent.BookEventEnum;
 import org.labmonkeys.home_library.librarian.model.BorrowedBook;
 import org.labmonkeys.home_library.librarian.model.LibraryCard;
 
@@ -32,7 +31,7 @@ public class LibrarianService implements LibrarianAPI {
     LibrarianMapper mapper;
 
     @Inject
-    BookEventPublisher bookEventPublisher;
+    BorrowedBookEventPublisher bookEventPublisher;
 
     public Response getLibraryCard(@PathParam("cardId") Long libraryCardId) {
         return Response.ok(mapper.libraryCardToDTO(LibraryCard.findById(libraryCardId))).build();
@@ -74,8 +73,10 @@ public class LibrarianService implements LibrarianAPI {
 
         // Publish an event to let subscribers know that the books are checked-out (Since this is anyncronous, do it first)
         List<BookState> bookState = new ArrayList<BookState>();
-        BookEvent bookEvent = new BookEvent();
+        BorrowedBookEvent bookEvent = new BorrowedBookEvent();
         bookEvent.setBookList(bookState);
+        bookEvent.setLibraryCardId(card.getLibraryCardId());
+        bookEvent.setEventType(BookEventEnum.CHECK_OUT);
         for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookState state = new BookState();
             state.setBookId(borrowedBook.getBookId());
@@ -85,21 +86,6 @@ public class LibrarianService implements LibrarianAPI {
             bookState.add(state);
         }
         bookEventPublisher.sendEvent(bookEvent);
-
-        // Update the librarian data store with the borrowed books
-        List<BorrowedBook> borrowedBooks = mapper.BorrowedBookDtosToEntities(cardDto.getBorrowedBooks());
-        Calendar cal = Calendar.getInstance();
-        Date borrowedDate = cal.getTime();
-        cal.add(Calendar.DAY_OF_MONTH, 14);
-        Date dueDate = cal.getTime();
-        for (BorrowedBook borrowedBook : borrowedBooks) {
-            borrowedBook.setLibraryCard(card);
-            borrowedBook.setBorrowedDate(borrowedDate);
-            borrowedBook.setDueDate(dueDate);
-        }
-        BorrowedBook.persist(borrowedBooks);
-        card.flush();
-        
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 
@@ -111,8 +97,10 @@ public class LibrarianService implements LibrarianAPI {
         }
         // Publish an event to let subscribers know that the books are checked-in (Since this is anyncronous, do it first)
         List<BookState> bookState = new ArrayList<BookState>();
-        BookEvent bookEvent = new BookEvent();
+        BorrowedBookEvent bookEvent = new BorrowedBookEvent();
         bookEvent.setBookList(bookState);
+        bookEvent.setLibraryCardId(card.getLibraryCardId());
+        bookEvent.setEventType(BookEventEnum.CHECK_IN);
         for (BorrowedBookDTO borrowedBook : cardDto.getBorrowedBooks()) {
             BookState state = new BookState();
             state.setBookId(borrowedBook.getBookId());
@@ -122,11 +110,6 @@ public class LibrarianService implements LibrarianAPI {
             bookState.add(state);
         }
         bookEventPublisher.sendEvent(bookEvent);
-        // Delete the borrowed books from the card.
-        for (BorrowedBookDTO borrowedBookDTO : cardDto.getBorrowedBooks()) {
-            BorrowedBook.deleteById(borrowedBookDTO.getBookId());
-        }
-        card.flush();
         return Response.ok(mapper.libraryCardToDTO(card)).build();
     }
 

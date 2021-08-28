@@ -6,12 +6,12 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 @ApplicationScoped
-public class BookEventPublisher {
+public class BorrowedBookEventPublisher {
 
     @Inject @Channel("book-event")
-    Emitter<BookEvent> bookEventEmitter;
+    Emitter<BorrowedBookEvent> bookEventEmitter;
 
-    public void sendEvent(BookEvent bookEvent) {
+    public void sendEvent(BorrowedBookEvent bookEvent) {
         bookEventEmitter.send(bookEvent);
     }
 }
